@@ -4,6 +4,32 @@ See [VERSIONING.md](VERSIONING.md) for the compatibility promise that governs
 this changelog. Within 1.x, a proof that verifies under one version verifies
 under any later version.
 
+## [1.1.0] — 2026-07-24
+
+### The base install now verifies Ed25519
+
+`cryptography` moved from the `[asymmetric]` extra into the base runtime
+dependencies. The reference broker (`actenon-permit`) mints Ed25519 proofs in
+production, so `pip install actenon-kernel` previously produced a verifier
+that could not verify the artifacts this ecosystem actually produces — 15 of
+33 conformance tests skipped on a base install. All 33 now execute and pass
+with no extras. See FINDINGS.md ("RESOLVED: base-install conformance") for
+why the original "no action" conclusion was reversed.
+
+Under the compatibility promise this is additive: no API change, and nothing
+that previously verified stops verifying.
+
+### Changed
+
+- `cryptography>=42` is a base runtime dependency.
+- The `[asymmetric]` extra is **retained** for backward compatibility —
+  consumers declare `actenon-kernel[asymmetric]` (the reference broker does)
+  and removing the extra would break those specs. It now restates the base
+  dependency and installs nothing additional.
+- CI: the base-install conformance job now asserts `cryptography` is present
+  and hard-fails on any skipped conformance test (previously it asserted the
+  opposite and merely reported the skip count).
+
 ## [1.0.0] — 2026-07-24
 
 ### The promotion

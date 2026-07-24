@@ -410,7 +410,7 @@ def verify_checkpoint_signature(
     except Exception as exc:
         raise _error(
             "CRYPTO_BACKEND_UNAVAILABLE",
-            "Ed25519 verification requires the optional 'asymmetric' package extra",
+            "Ed25519 verification requires the 'cryptography' package (a base dependency since 1.1.0 — this install is missing or broken)",
         ) from exc
     statement = _checkpoint_statement(
         log=log,

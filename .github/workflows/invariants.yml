@@ -81,7 +81,7 @@ jobs:
 
       - name: Run conformance suite on base install
         # The base install has NO extras. This proves the README claim:
-        # "pip install actenon-kernel # core verifier (pure Python)"
+        # "pip install actenon-kernel # full verifier: HMAC and Ed25519"
         run: |
           /tmp/clean/bin/pip install pytest
           /tmp/clean/bin/python -m pytest tests/conformance/ -v --tb=short 2>&1 | tail -30
@@ -103,13 +103,12 @@ jobs:
           /tmp/base/bin/pip install pytest
           /tmp/base/bin/pip install -e .
 
-      - name: Verify NO cryptography is installed
+      - name: Verify cryptography IS installed
+        # Since 1.1.0 cryptography is a base dependency: the reference
+        # broker mints Ed25519, so the default install must verify it.
+        # See FINDINGS.md "RESOLVED: base-install conformance".
         run: |
-          if /tmp/base/bin/python -c "import cryptography" 2>/dev/null; then
-            echo "FAIL: cryptography is installed in base install"
-            exit 1
-          fi
-          echo "OK: base install has no cryptography"
+          /tmp/base/bin/python -c "import cryptography; print('OK: base install has cryptography', cryptography.__version__)"
 
       - name: Run conformance suite
         run: |
@@ -117,11 +116,16 @@ jobs:
           echo "=== Summary ==="
           tail -5 /tmp/conformance-output.txt
 
-      - name: Report skipped count
-        # Skipped tests are the asymmetric ones that need [asymmetric].
-        # This is expected and documented in FINDINGS.md.
+      - name: Assert zero skips
+        # Every conformance test must EXECUTE on a base install. A skip
+        # means the default install cannot verify something the ecosystem
+        # produces — the defect this gate exists to prevent.
         run: |
           SKIPPED=$(grep -c 'SKIPPED' /tmp/conformance-output.txt || true)
           PASSED=$(grep -c 'PASSED' /tmp/conformance-output.txt || true)
-          echo "Base-install conformance: $PASSED passed, $SKIPPED skipped (asymmetric extra required)"
-          echo "See FINDINGS.md for the full analysis."
+          echo "Base-install conformance: $PASSED passed, $SKIPPED skipped"
+          if [ "$SKIPPED" -ne 0 ]; then
+            echo "FAIL: $SKIPPED conformance tests skipped on a base install"
+            grep 'SKIPPED' /tmp/conformance-output.txt
+            exit 1
+          fi

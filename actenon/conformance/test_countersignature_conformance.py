@@ -27,7 +27,7 @@ def _load(relative_path: str) -> dict[str, object]:
 
 @unittest.skipUnless(
     find_spec("cryptography") is not None,
-    "receipt counter-signature conformance requires the 'asymmetric' extra",
+    "receipt counter-signature conformance requires the 'cryptography' package (a base dependency since 1.1.0)",
 )
 class CounterSignatureConformanceTests(unittest.TestCase):
     def test_valid_historical_kid_verifies_offline(self) -> None:

@@ -30,7 +30,7 @@ def _load(relative_path: str) -> dict[str, object]:
 
 @unittest.skipUnless(
     find_spec("cryptography") is not None,
-    "trust-artifact conformance requires the 'asymmetric' extra",
+    "trust-artifact conformance requires the 'cryptography' package (a base dependency since 1.1.0)",
 )
 class TrustArtifactConformanceTests(unittest.TestCase):
     def test_good_status_and_exact_action_approval_verify(self) -> None:
