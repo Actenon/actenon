@@ -13,7 +13,7 @@
 [![SDKs: Py · TS · Go · Rust](https://img.shields.io/badge/SDKs-Py%20%C2%B7%20TS%20%C2%B7%20Go%20%C2%B7%20Rust-orange.svg)](docs/SDK_SELECTION_GUIDE.md)
 [![CI](https://github.com/Actenon/actenon-kernel/actions/workflows/ci.yml/badge.svg)](https://github.com/Actenon/actenon-kernel/actions/workflows/ci.yml)
 [![Invariants](https://github.com/Actenon/actenon-kernel/actions/workflows/invariants.yml/badge.svg)](https://github.com/Actenon/actenon-kernel/actions/workflows/invariants.yml)
-[![Claims: machine-verified](https://img.shields.io/badge/claims-machine--verified-2ea44f.svg)](https://github.com/Actenon/actenon-kernel/actions/workflows/verify-claims.yml)
+[![claims: machine-verified](https://img.shields.io/github/actions/workflow/status/Actenon/actenon-kernel/verify-claims.yml?branch=main&label=claims%3A%20machine-verified)](https://github.com/Actenon/actenon-kernel/actions/workflows/verify-claims.yml)
 [![Code style: ruff](https://img.shields.io/badge/Code%20style-ruff-black.svg)](https://docs.astral.sh/ruff/)
 [![No runtime cloud dependency](https://img.shields.io/badge/Runtime-no%20cloud%20calls-2ea44f.svg)](#independence)
 [![Offline verification](https://img.shields.io/badge/Verify-offline%20capable-2ea44f.svg)](tests/test_neutrality.py)
