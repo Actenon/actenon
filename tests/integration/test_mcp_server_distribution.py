@@ -11,10 +11,19 @@ from __future__ import annotations
 import copy
 import socket
 import unittest
+from importlib.util import find_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from actenon.mcp_server import (
+# The server module imports cleanly without the extra; only build_server()
+# needs `mcp`. Skip the whole module when it is absent so a base install
+# stays green, and install [mcp] in CI so these actually run.
+requires_mcp = unittest.skipUnless(
+    find_spec("mcp") is not None,
+    "the packaged MCP server requires the 'mcp' extra",
+)
+
+from actenon.mcp_server import (  # noqa: E402
     DEMO_BANNER,
     DecisionLog,
     build_demo_gate,
@@ -38,6 +47,7 @@ def _tools(demo: bool = True) -> dict:
     return {name: tool.fn for name, tool in server._tool_manager._tools.items()}
 
 
+@requires_mcp
 class McpServerToolSurfaceTests(unittest.TestCase):
     def test_three_tools_always_present(self) -> None:
         for demo in (True, False):
@@ -66,6 +76,7 @@ class McpServerToolSurfaceTests(unittest.TestCase):
                 self.assertNotIn(DEMO_BANNER, tool.description or "")
 
 
+@requires_mcp
 class McpServerDecisionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.tools = _tools(demo=True)
@@ -197,6 +208,7 @@ class FailClosedTests(unittest.TestCase):
         self.assertIn("production", str(raised.exception).lower())
 
 
+@requires_mcp
 class DemoModeIsOfflineTests(unittest.TestCase):
     def test_building_the_demo_server_opens_no_socket(self) -> None:
         """Demo mode must need no network. Fail the test if it opens one."""

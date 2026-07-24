@@ -35,7 +35,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install "actenon-protocol>=1.1.0,<2"
-          python -m pip install -e ".[dev]"
+          python -m pip install -e ".[mcp,dev]"
 
       - name: Verify zero network calls during verification (neutrality)
         # The README claims "Zero network calls during verification" and

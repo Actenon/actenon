@@ -36,7 +36,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install "actenon-protocol>=1.1.0,<2"
-          python -m pip install -e ".[asymmetric,dev]"
+          python -m pip install -e ".[asymmetric,mcp,dev]"
           python -m pip install pydantic pyyaml jsonschema pytest
 
       - name: Run protocol drift gate
