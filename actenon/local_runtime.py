@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import gc
 import hashlib
 import json
 import shutil
@@ -2740,6 +2741,32 @@ def _simulate_replay_refused(scenario_dir: Path) -> SimulationScenarioResult:
     )
 
 
+def _stabilize_sqlite_state(paths: LocalRuntimePaths) -> None:
+    """Settle SQLite files under the runtime root before they are hashed.
+
+    Replay stores may hold connections whose WAL content is checkpointed
+    into the main database file only when the connection is finalized —
+    which CPython may do at any point, including between the manifest
+    hash pass and the archive write. That produces a bundle whose
+    ``*.sqlite3`` bytes no longer match the manifest ("File hash
+    mismatch: .../replay.sqlite3"). Collect garbage so lingering
+    connections close now, then force a TRUNCATE checkpoint so every
+    database file is complete and byte-stable before hashing.
+    """
+    gc.collect()
+    for db_path in sorted(paths.root.rglob("*.sqlite3")):
+        try:
+            connection = sqlite3.connect(db_path)
+            try:
+                connection.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+            finally:
+                connection.close()
+        except sqlite3.Error:
+            # A corrupt or locked database is the verifier's finding to
+            # report, not the exporter's to mask — hash whatever is there.
+            continue
+
+
 def export_local_runtime_bundle(
     runtime_dir: str | Path | None = None,
     *,
@@ -2760,6 +2787,7 @@ def export_local_runtime_bundle(
             raise ValueError(f"bundle output already exists at {target}; pass --force to replace it")
         _ensure_removed(target)
 
+    _stabilize_sqlite_state(paths)
     bundle_manifest = _build_bundle_manifest(paths)
 
     target.parent.mkdir(parents=True, exist_ok=True)
