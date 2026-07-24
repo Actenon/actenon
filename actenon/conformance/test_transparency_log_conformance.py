@@ -32,7 +32,7 @@ def _load(relative_path: str) -> dict[str, object]:
 
 @unittest.skipUnless(
     find_spec("cryptography") is not None,
-    "transparency-log conformance requires the 'asymmetric' extra",
+    "transparency-log conformance requires the 'cryptography' package (a base dependency since 1.1.0)",
 )
 class TransparencyLogConformanceTests(unittest.TestCase):
     def test_checkpoint_rotation_inclusion_and_consistency_verify_offline(self) -> None:

@@ -311,7 +311,7 @@ def _verify_ed25519(
     except Exception as exc:
         raise CounterSignatureVerificationError(
             "CRYPTO_BACKEND_UNAVAILABLE",
-            "Ed25519 verification requires the optional 'asymmetric' package extra",
+            "Ed25519 verification requires the 'cryptography' package (a base dependency since 1.1.0 — this install is missing or broken)",
         ) from exc
     try:
         Ed25519PublicKey.from_public_bytes(public_key_bytes).verify(
