@@ -1,0 +1,45 @@
+name: Version drift gate
+
+# WO-19 4.5: "Add a CI job that FAILS if pyproject.toml's version is
+# ahead of the newest git tag on main. This defect class must not recur,
+# in any repo."
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  version-drift:
+    name: Verify pyproject version has a git tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check pyproject version is tagged
+        run: |
+          set -euo pipefail
+          PYPROJECT_VERSION=$(python3 -c "
+          import tomllib
+          with open('pyproject.toml','rb') as f:
+              d = tomllib.load(f)
+          print(d['project']['version'])
+          ")
+          echo "pyproject.toml version: $PYPROJECT_VERSION"
+          NEWEST_TAG=$(git tag -l 'v*' | grep -E '^v[0-9]' | sed 's/^v//' | sort -V | tail -1)
+          echo "newest git tag: v${NEWEST_TAG:-<none>}"
+          if git rev-parse "v${PYPROJECT_VERSION}" >/dev/null 2>&1; then
+            echo "OK: tag v${PYPROJECT_VERSION} exists for pyproject version ${PYPROJECT_VERSION}"
+            exit 0
+          fi
+          echo "::error::pyproject.toml declares version ${PYPROJECT_VERSION} but no git tag v${PYPROJECT_VERSION} exists."
+          echo "::error::The newest tag is v${NEWEST_TAG:-<none>}."
+          echo "::error::Either tag v${PYPROJECT_VERSION} (if this version is ready to publish)"
+          echo "::error::or revert pyproject.toml to ${NEWEST_TAG} (if this version is not yet ready)."
+          exit 1
