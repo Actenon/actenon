@@ -23,7 +23,7 @@ requires_mcp = unittest.skipUnless(
     "the packaged MCP server requires the 'mcp' extra",
 )
 
-from actenon.mcp_server import (  # noqa: E402
+from actenon.mcp_server import (
     DEMO_BANNER,
     DecisionLog,
     build_demo_gate,
