@@ -20,11 +20,11 @@ For the exact protection boundary and deployment conditions, read
 
 ## Install For Local Verification
 
-The core kernel stays dependency-light. Install the asymmetric extra when you
-want to verify Cloud-issued Ed25519 proof and outcome-attestation artifacts:
+The base install is the full verifier — it verifies HMAC and Ed25519 proof
+and outcome-attestation artifacts with no extras:
 
 ```bash
-pip install -e ".[asymmetric]"
+pip install -e .
 ```
 
 ## Fastest Path
@@ -32,7 +32,7 @@ pip install -e ".[asymmetric]"
 This is the shortest product-shaped path through the kernel:
 
 ```bash
-python3 -m pip install -e ".[asymmetric]"
+python3 -m pip install -e .
 python3 -m actenon.cli up
 ```
 
@@ -73,7 +73,7 @@ python3 -m actenon.cli bundle verify artifacts/local_runtime/bundles/actenon-loc
 The old compact proof-demo path is still available if you specifically want the original seeded lab flow:
 
 ```bash
-python3 -m pip install -e ".[asymmetric]"
+python3 -m pip install -e .
 bash ./scripts/first_run.sh
 make public-verify
 ```
@@ -129,7 +129,7 @@ and `ACTENON_V2_KEYSTONE_ACCEPTANCE.md`.
 - the refund endpoint example proves this is not just simulator theater: you can protect a consequential endpoint immediately
 - `python3 -m actenon.cli bundle export` emits a `.actenon` portable execution evidence bundle
 - `python3 -m actenon.cli bundle verify` checks that bundle hashes and chain metadata still match the contained artifacts
-- `python3 -m pip install -e ".[asymmetric]"` installs the repo in editable mode
+- `python3 -m pip install -e .` installs the repo in editable mode
 - `bash ./scripts/first_run.sh` gives you the fastest end-to-end protected-endpoint proof run
 - `make public-verify` runs the same gate as `bash scripts/verify_release_gate.sh`: keystone tests, full kernel tests, Ruff, public boundary validation, and public archive validation
 
