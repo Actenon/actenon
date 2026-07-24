@@ -1,6 +1,6 @@
 # Actenon Kernel
 
-<!-- mcp-name: io.github.actenon/kernel -->
+<!-- mcp-name: io.github.Actenon/kernel -->
 
 > The open verifier for proof-bound consequential execution. Defines what a valid proof is. Verifies proofs at the execution edge; issues no grants; runs no policy decisions.
 

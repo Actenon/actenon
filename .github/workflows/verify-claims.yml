@@ -96,7 +96,7 @@ jobs:
         # listing silently stops updating, so both are machine-checked.
         run: |
           python - <<'EOF'
-          import json, pathlib, sys, tomllib
+          import json, os, pathlib, sys, tomllib
 
           server = json.loads(pathlib.Path("server.json").read_text())
           readme = pathlib.Path("README.md").read_text()
@@ -108,6 +108,20 @@ jobs:
           marker = f"mcp-name: {server['name']}"
           if marker not in readme:
               problems.append(f"README.md is missing the ownership marker {marker!r}")
+
+          # The registry namespace is CASE-SENSITIVE and must match the GitHub
+          # owner exactly: it grants io.github.<Owner>/*. Getting this wrong
+          # costs a published version, because the marker lives in the README
+          # that PyPI freezes into the package description. Caught here instead.
+          owner = os.environ.get("GITHUB_REPOSITORY", "/").split("/")[0]
+          if owner:
+              expected_prefix = f"io.github.{owner}/"
+              if not server["name"].startswith(expected_prefix):
+                  problems.append(
+                      f"server.json name {server['name']!r} does not start with "
+                      f"{expected_prefix!r} (namespace is case-sensitive; the "
+                      f"registry grants io.github.<Owner>/* verbatim)"
+                  )
           if server["version"] != package_version:
               problems.append(
                   f"server.json version {server['version']} != pyproject {package_version}"
