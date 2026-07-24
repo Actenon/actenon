@@ -147,9 +147,12 @@ For deployments that need portable cryptographic attestation of origin, the Kern
 Python 3.10+ for the Kernel alone. The full stack including Permit requires 3.11+.
 
 ```bash
-pip install actenon-kernel            # core verifier (pure Python, no asymmetric extra)
-pip install "actenon-kernel[asymmetric]"   # Ed25519 + Outcome Attestation verification
+pip install actenon-kernel            # full verifier: HMAC and Ed25519
 ```
+
+Since 1.1.0 the base install verifies everything the ecosystem produces,
+including Ed25519 proofs and Outcome Attestations. (The `[asymmetric]` extra
+still resolves for backward compatibility; it installs nothing additional.)
 
 ## Use as a verifier (resource boundary)
 
@@ -193,7 +196,7 @@ result = verifier.verify_boundary(BoundaryVerificationRequest(
 ## Use as a minter + executor (brokered mode, full local proof)
 
 ```bash
-python3 -m pip install -e ".[asymmetric]"
+python3 -m pip install -e .
 python3 -m actenon.cli up
 python3 -m actenon.cli doctor
 python3 -m actenon.cli simulate --incident replit

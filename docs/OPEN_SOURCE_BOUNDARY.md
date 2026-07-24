@@ -148,8 +148,8 @@ The open repository must remain:
 The paid layer can build on the kernel, but it should not absorb the kernel or turn the public repository into a disguised control plane.
 
 Local verification does not require Cloud. Cloud-issued artifacts can be copied
-out and verified by the open Kernel when the verifier has the artifact, the
-issuer well-known key material, and the asymmetric verification extra installed.
+out and verified by the open Kernel when the verifier has the artifact and the
+issuer well-known key material — the base install verifies Ed25519 since 1.1.0.
 
 ## What This Repository Does Not Solve
 
