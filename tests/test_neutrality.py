@@ -39,7 +39,7 @@ FINDING:
 from __future__ import annotations
 
 import socket
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -65,7 +65,7 @@ def _block_network(monkeypatch):
 
 
 def _make_intent() -> ActionIntent:
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     return ActionIntent(
         intent_id="intent_test_offline_001",
         issued_at=now,
@@ -86,7 +86,7 @@ def _make_context() -> DynamicContextInput:
         request_id="req_test_offline_001",
         audience=AudienceRef(type="service", id="service:payments"),
         scope_capabilities=("payment.refund",),
-        now=datetime.now(UTC),
+        now=datetime.now(timezone.utc),
     )
 
 
