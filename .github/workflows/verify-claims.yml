@@ -35,7 +35,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install "actenon-protocol>=1.1.0,<2"
-          python -m pip install -e ".[dev]"
+          python -m pip install -e ".[mcp,dev]"
 
       - name: Verify zero network calls during verification (neutrality)
         # The README claims "Zero network calls during verification" and
@@ -87,6 +87,46 @@ jobs:
                   print(f'FAIL: {f}', file=sys.stderr)
               sys.exit(1)
           print(f'OK: README conformance count matches the runner ({actual} vectors)')
+          EOF
+
+      - name: Verify the MCP Registry ownership marker and server.json agree
+        # The registry proves we own the PyPI package by finding an
+        # `mcp-name:` marker in the README (which becomes the PyPI
+        # description). Lose the marker or drift the version and the
+        # listing silently stops updating, so both are machine-checked.
+        run: |
+          python - <<'EOF'
+          import json, pathlib, sys, tomllib
+
+          server = json.loads(pathlib.Path("server.json").read_text())
+          readme = pathlib.Path("README.md").read_text()
+          package_version = tomllib.loads(
+              pathlib.Path("pyproject.toml").read_text()
+          )["project"]["version"]
+
+          problems = []
+          marker = f"mcp-name: {server['name']}"
+          if marker not in readme:
+              problems.append(f"README.md is missing the ownership marker {marker!r}")
+          if server["version"] != package_version:
+              problems.append(
+                  f"server.json version {server['version']} != pyproject {package_version}"
+              )
+          for package in server["packages"]:
+              if package["version"] != package_version:
+                  problems.append(
+                      f"server.json packages[].version {package['version']} "
+                      f"!= pyproject {package_version}"
+                  )
+              if package["identifier"] != "actenon-kernel":
+                  problems.append(
+                      f"unexpected package identifier {package['identifier']!r}"
+                  )
+          if problems:
+              for problem in problems:
+                  print(f"FAIL: {problem}", file=sys.stderr)
+              sys.exit(1)
+          print(f"OK: MCP Registry metadata matches the package ({package_version})")
           EOF
 
       - name: Check generated Python badge

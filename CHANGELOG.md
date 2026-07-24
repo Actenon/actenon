@@ -4,6 +4,44 @@ See [VERSIONING.md](VERSIONING.md) for the compatibility promise that governs
 this changelog. Within 1.x, a proof that verifies under one version verifies
 under any later version.
 
+## [1.2.0] — 2026-07-25
+
+### A connectable MCP server
+
+The MCP adapter has worked for a while, but there was no way to *use* it in
+sixty seconds: no runnable binary, no registry listing, no config block to
+paste. This release packages what already existed.
+
+### Added
+
+- **`actenon-mcp` console script** (`actenon.mcp_server`) — a stdio MCP
+  server exposing three tools: `actenon_verify` (pure verification, no side
+  effects, no replay state consumed), `actenon_gate` (ALLOW or a typed
+  refusal, emits a hash-chained Receipt or Refusal), and `actenon_receipt`
+  (fetch a prior decision with its position and hashes in the chain). Every
+  response carries the machine `reason_code` *and* the human-readable
+  reason, so a model can see why it was refused.
+- **`--demo` mode** — offline with an ephemeral per-process key and
+  in-memory state: no configuration read, no network call, no key on disk.
+  Every tool description is prefixed `DEMO MODE — ephemeral key, not for
+  production.`, and demo mode is itself refused in a production-like
+  environment. It additionally exposes `actenon_demo_grant`, which stands in
+  for the human approval step a real deployment performs in
+  `actenon-permit`; that tool is **absent** from a non-demo server, because
+  a verifier that issues its own authority is not a verifier.
+- **`server.json`** and `.github/workflows/publish-mcp-registry.yml` — the
+  listing in the official MCP Registry, published from CI via GitHub OIDC.
+  The registry's PyPI ownership marker (`mcp-name:` in this README) and the
+  version agreement between `server.json`, `pyproject.toml`, and the git tag
+  are machine-checked by `verify-claims.yml`.
+
+### Fail-closed behaviour
+
+Without `--demo`, the server requires signing material and refuses to start
+without it (WO-8): missing `--key-file`, a nonexistent path, and an empty
+key file each exit non-zero with a message naming the demo alternative. Key
+material is read from a path and never logged.
+
 ## [1.1.0] — 2026-07-24
 
 ### The base install now verifies Ed25519

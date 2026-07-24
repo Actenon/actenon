@@ -1,5 +1,7 @@
 # Actenon Kernel
 
+<!-- mcp-name: io.github.actenon/kernel -->
+
 > The open verifier for proof-bound consequential execution. Defines what a valid proof is. Verifies proofs at the execution edge; issues no grants; runs no policy decisions.
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
@@ -14,6 +16,7 @@
 [![CI](https://github.com/Actenon/actenon-kernel/actions/workflows/ci.yml/badge.svg)](https://github.com/Actenon/actenon-kernel/actions/workflows/ci.yml)
 [![Invariants](https://github.com/Actenon/actenon-kernel/actions/workflows/invariants.yml/badge.svg)](https://github.com/Actenon/actenon-kernel/actions/workflows/invariants.yml)
 [![claims: machine-verified](https://img.shields.io/github/actions/workflow/status/Actenon/actenon-kernel/verify-claims.yml?branch=main&label=claims%3A%20machine-verified)](https://github.com/Actenon/actenon-kernel/actions/workflows/verify-claims.yml)
+[![MCP server](https://img.shields.io/badge/MCP-connectable%20server-8A2BE2.svg)](docs/integrations/MCP_QUICKSTART.md)
 [![Code style: ruff](https://img.shields.io/badge/Code%20style-ruff-black.svg)](https://docs.astral.sh/ruff/)
 [![No runtime cloud dependency](https://img.shields.io/badge/Runtime-no%20cloud%20calls-2ea44f.svg)](#independence)
 [![Offline verification](https://img.shields.io/badge/Verify-offline%20capable-2ea44f.svg)](tests/test_neutrality.py)
@@ -182,6 +185,37 @@ pip install actenon-kernel            # full verifier: HMAC and Ed25519
 Since 1.1.0 the base install verifies everything the ecosystem produces,
 including Ed25519 proofs and Outcome Attestations. (The `[asymmetric]` extra
 still resolves for backward compatibility; it installs nothing additional.)
+
+## Connect it to an agent (MCP, 60 seconds, zero install)
+
+The Kernel ships a runnable MCP server, so a model can ask it whether an
+action is allowed *before* the action runs — and read back exactly why it was
+refused. Paste this into any MCP client (Claude Desktop, ChatGPT, or anything
+else that speaks MCP):
+
+```json
+{
+  "mcpServers": {
+    "actenon": {
+      "command": "uvx",
+      "args": ["--from", "actenon-kernel[mcp]", "actenon-mcp", "--demo"]
+    }
+  }
+}
+```
+
+`uvx` fetches and runs it — nothing to install first. `--demo` runs offline
+with an ephemeral key and in-memory state; it is clearly marked **DEMO MODE**
+in every tool description and must not be used in production.
+
+Three tools: `actenon_verify` (is this proof good for this exact action?),
+`actenon_gate` (ALLOW or a typed refusal), `actenon_receipt` (the
+hash-chained receipt for a prior decision). Every refusal carries both the
+machine code and the human-readable reason.
+
+Full walkthrough, including a real transcript of an agent being refused for
+widening a refund and then succeeding within scope:
+[`docs/integrations/MCP_QUICKSTART.md`](docs/integrations/MCP_QUICKSTART.md).
 
 ## Use as a verifier (resource boundary)
 
