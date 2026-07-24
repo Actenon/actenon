@@ -1,0 +1,46 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.actenon/kernel",
+  "title": "Actenon Kernel",
+  "description": "Verify proof at the execution edge: ALLOW or a typed refusal a model can read.",
+  "version": "1.2.0",
+  "websiteUrl": "https://github.com/Actenon/actenon-kernel",
+  "repository": {
+    "url": "https://github.com/Actenon/actenon-kernel",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "actenon-kernel",
+      "version": "1.2.0",
+      "runtimeHint": "uvx",
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--from",
+          "value": "actenon-kernel[mcp]",
+          "isRequired": true,
+          "description": "The MCP server entry point ships in the [mcp] extra."
+        },
+        {
+          "type": "positional",
+          "value": "actenon-mcp",
+          "isRequired": true,
+          "description": "Console script that starts the stdio MCP server."
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "--demo",
+          "isRequired": false,
+          "description": "Run offline with an ephemeral key and in-memory state. Omit for a production server, which requires --key-file and fails closed without it."
+        }
+      ],
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

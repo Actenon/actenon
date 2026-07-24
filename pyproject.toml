@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "actenon-kernel"
-version = "1.1.0"
+version = "1.2.0"
 description = "Open proof-required execution kernel for consequential actions."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -55,6 +55,9 @@ postgres = ["psycopg[binary]>=3.1"]
 # Permit owns `actenon` because it is the documented hero CLI; the kernel
 # is the lower-level verifier and its CLI is `actenon-kernel`.
 actenon-kernel = "actenon.cli:main"
+# WO-7 (kernel as a plugin host for the `actenon` command) has not merged, so
+# this ships as its own console script rather than an actenon.commands plugin.
+actenon-mcp = "actenon.mcp_server:main"
 actenon-local-proof = "actenon.demo.local_proof:main"
 actenon-portable-local-proof = "actenon.demo.portable_local_proof:main"
 

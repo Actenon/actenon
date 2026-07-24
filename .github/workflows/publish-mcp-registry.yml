@@ -1,0 +1,97 @@
+name: Publish to MCP Registry
+
+# Lists the server in the official MCP Registry (registry.modelcontextprotocol.io).
+#
+# The registry hosts metadata only, never artifacts: it verifies that we own the
+# PyPI package by looking for an `mcp-name:` marker in the package README (the
+# text PyPI shows as the description). That marker lives in README.md and is
+# machine-checked by verify-claims.yml, so it cannot be dropped by accident.
+#
+# Authentication is GitHub OIDC — the workflow proves it runs inside the
+# Actenon org, which owns the io.github.actenon/* namespace. No token is
+# stored and no interactive login is needed.
+#
+# Runs after publish.yml has put the matching version on PyPI: the registry
+# rejects a server.json whose package version is not resolvable.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  publish-mcp-registry:
+    name: List actenon-kernel in the MCP Registry
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify server.json version matches the tag and pyproject
+        run: |
+          python - <<'EOF'
+          import json, os, pathlib, re, sys, tomllib
+
+          server = json.loads(pathlib.Path("server.json").read_text())
+          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          package_version = pyproject["project"]["version"]
+
+          problems = []
+          if server["version"] != package_version:
+              problems.append(
+                  f"server.json version {server['version']} != pyproject {package_version}"
+              )
+          for package in server["packages"]:
+              if package["version"] != package_version:
+                  problems.append(
+                      f"server.json packages[].version {package['version']} "
+                      f"!= pyproject {package_version}"
+                  )
+
+          ref = os.environ.get("GITHUB_REF", "")
+          if ref.startswith("refs/tags/v"):
+              tag_version = ref[len("refs/tags/v"):]
+              if tag_version != package_version:
+                  problems.append(f"tag v{tag_version} != pyproject {package_version}")
+
+          readme = pathlib.Path("README.md").read_text()
+          if f"mcp-name: {server['name']}" not in readme:
+              problems.append(
+                  f"README.md is missing the ownership marker 'mcp-name: {server['name']}'"
+              )
+
+          if problems:
+              for problem in problems:
+                  print(f"::error::{problem}")
+              sys.exit(1)
+          print(f"OK: server.json, pyproject, tag, and README agree on {package_version}")
+          EOF
+
+      - name: Wait for the version to be resolvable on PyPI
+        # publish.yml runs on the same tag; the registry validates that the
+        # declared package version exists, so do not race it.
+        run: |
+          VERSION=$(python -c "import tomllib,pathlib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          for attempt in $(seq 1 30); do
+            if curl -sf "https://pypi.org/pypi/actenon-kernel/${VERSION}/json" > /dev/null; then
+              echo "actenon-kernel ${VERSION} is on PyPI"
+              exit 0
+            fi
+            echo "attempt ${attempt}: actenon-kernel ${VERSION} not on PyPI yet"
+            sleep 20
+          done
+          echo "::error::actenon-kernel ${VERSION} never appeared on PyPI"
+          exit 1
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to the MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish
+        run: ./mcp-publisher publish
