@@ -13,10 +13,39 @@
 [![SDKs: Py · TS · Go · Rust](https://img.shields.io/badge/SDKs-Py%20%C2%B7%20TS%20%C2%B7%20Go%20%C2%B7%20Rust-orange.svg)](docs/SDK_SELECTION_GUIDE.md)
 [![CI](https://github.com/Actenon/actenon-kernel/actions/workflows/ci.yml/badge.svg)](https://github.com/Actenon/actenon-kernel/actions/workflows/ci.yml)
 [![Invariants](https://github.com/Actenon/actenon-kernel/actions/workflows/invariants.yml/badge.svg)](https://github.com/Actenon/actenon-kernel/actions/workflows/invariants.yml)
+[![Claims: machine-verified](https://img.shields.io/badge/claims-machine--verified-2ea44f.svg)](https://github.com/Actenon/actenon-kernel/actions/workflows/verify-claims.yml)
 [![Code style: ruff](https://img.shields.io/badge/Code%20style-ruff-black.svg)](https://docs.astral.sh/ruff/)
 [![No runtime cloud dependency](https://img.shields.io/badge/Runtime-no%20cloud%20calls-2ea44f.svg)](#independence)
 [![Offline verification](https://img.shields.io/badge/Verify-offline%20capable-2ea44f.svg)](tests/test_neutrality.py)
 [![Kernel independence](https://img.shields.io/badge/Deps-kernel%20independent-2ea44f.svg)](tests/test_independence.py)
+
+### Every claim above is machine-verified
+
+The `claims: machine-verified` badge links to a CI gate
+([`verify-claims.yml`](.github/workflows/verify-claims.yml)) that fails on
+every PR, push to `main`, and once a day if any factual claim this README
+makes about the kernel stops being true:
+
+- **Zero network calls during verification** — [`tests/test_neutrality.py`](tests/test_neutrality.py)
+  runs in the gate, not just behind a badge link.
+- **Runs without Permit, Cloud, or Scan** — [`tests/test_independence.py`](tests/test_independence.py),
+  plus a source scan proving the kernel never imports Cloud or Permit, plus
+  [`scripts/assert_dep_direction.py`](scripts/assert_dep_direction.py)
+  (runtime deps are exactly `actenon-protocol`).
+- **The conformance count** — "51 conformance vectors" is compared against
+  what `actenon-kernel conformance run` actually executes; the vector files
+  themselves are hash-locked by
+  [`scripts/verify_conformance_manifest.py`](scripts/verify_conformance_manifest.py).
+- **Install commands** — every `pip install` in this README is resolved
+  against the live registry; the Python badge is generated, not hand-edited.
+- **The ecosystem table** — rendered from the protocol's `ecosystem.yaml`,
+  never hand-edited.
+
+The [Invariants](.github/workflows/invariants.yml) workflow additionally
+proves on every PR that a clean, no-extras install verifies the full
+conformance surface — 33/33 tests, zero skips — including Ed25519.
+
+If a claim drifts, the badge goes red before a human notices.
 
 ---
 
