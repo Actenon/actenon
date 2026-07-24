@@ -313,9 +313,11 @@ def _print_simulation_report(*, args: argparse.Namespace, report) -> None:
         print(f"  Artifacts: {result['artifact_dir']}")
         if result.get("summary_path") is not None:
             print(f"  Incident summary: {result['summary_path']}")
-        if result["refusal_code"] is not None:
+        # Incident results carry a different shape than scenario results
+        # and may omit these keys entirely.
+        if result.get("refusal_code") is not None:
             print(f"  Refusal code: {result['refusal_code']}")
-        if result["receipt_id"] is not None:
+        if result.get("receipt_id") is not None:
             print(f"  Receipt: {result['receipt_id']}")
         if result.get("perspectives"):
             print("  Perspectives:")
