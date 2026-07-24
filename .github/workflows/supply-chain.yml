@@ -154,8 +154,7 @@ jobs:
           for artefact in dist/*; do
             echo "Signing $artefact..."
             sigstore sign "$artefact" \
-              --bundle "${artefact}.sigstore.json" \
-              --output-certificate "${artefact}.crt.pem"
+              --bundle "${artefact}.sigstore.json"
           done
 
       - name: Attest build provenance

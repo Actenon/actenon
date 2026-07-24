@@ -4,6 +4,22 @@ See [VERSIONING.md](VERSIONING.md) for the compatibility promise that governs
 this changelog. Within 1.x, a proof that verifies under one version verifies
 under any later version.
 
+## [1.2.1] — 2026-07-25
+
+### Fixed
+
+- **MCP Registry namespace case.** The registry grants `io.github.<Owner>/*`
+  matching the GitHub owner verbatim, so `io.github.actenon/kernel` was
+  rejected with a 403 in favour of `io.github.Actenon/kernel`. Because the
+  ownership marker lives in the README that PyPI freezes into the package
+  description, correcting it needs a new release. `verify-claims.yml` now
+  derives the expected namespace from `GITHUB_REPOSITORY` and fails before
+  a release rather than after one.
+- **Sigstore release signing.** `sigstore sign --output-certificate` requires
+  `--output-signature` alongside it; the job now emits only the bundle, which
+  already contains both. This job runs solely on release tags, so it had been
+  reported as "skipping" on every PR and had never actually executed.
+
 ## [1.2.0] — 2026-07-25
 
 ### A connectable MCP server
