@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.Actenon/kernel",
   "title": "Actenon Kernel",
-  "description": "Verify proof at the execution edge: ALLOW or a typed refusal a model can read.",
-  "version": "1.2.1",
+  "description": "Verify consequential AI actions before they execute.",
+  "version": "1.2.2",
   "websiteUrl": "https://github.com/Actenon/actenon-kernel",
   "repository": {
     "url": "https://github.com/Actenon/actenon-kernel",
