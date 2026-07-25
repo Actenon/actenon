@@ -85,13 +85,27 @@ When reporting an issue, distinguish clearly between:
 
 Do not open a public issue for a sensitive vulnerability.
 
-Email `ross.buckley1990@gmail.com` with the subject prefix
-`[ACTENON SECURITY]`. Repository security advisories may also be used when the
-hosting platform presents the private reporting form.
+**Preferred:** Use [GitHub Security Advisories](https://github.com/Actenon/actenon-kernel/security/advisories/new)
+to file a private report. This is the fastest path and supports
+coordinated disclosure.
+
+**Alternative:** Email `ross.buckley1990@gmail.com` with the subject prefix
+`[ACTENON SECURITY]`.
 
 The acknowledgement, triage, coordinated-disclosure targets, reassessment
 cadence, and conformance-release assurance policy are defined in
 [docs/SECURITY_ASSURANCE.md](docs/SECURITY_ASSURANCE.md).
+
+## Cryptographic review status
+
+**No external cryptographic review has been performed.** Automated
+static analysis (bandit) has been run; results are in
+[`docs/CRYPTO_REVIEW.md`](docs/CRYPTO_REVIEW.md). Security researchers
+interested in reviewing the crypto surface (canonicalisation, replay
+atomicity, key lifecycle, attestation envelopes) are invited to file
+findings via the reporting channels above. The
+[CRYPTO_REVIEW.md](docs/CRYPTO_REVIEW.md) document provides exact file
+pointers and specific reviewer questions for each surface.
 
 ## What To Include
 
