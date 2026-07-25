@@ -40,20 +40,28 @@ jobs:
           package_version = pyproject["project"]["version"]
 
           problems = []
-          if server["version"] != package_version:
+
+          # A tag release must ship its own package: server, packages[], the
+          # tag, and pyproject all agree. A workflow_dispatch run is a
+          # metadata-only republish (registry metadata is immutable per server
+          # version, so changing a title or description needs a new server
+          # version but no new code) — there, packages[] may legitimately point
+          # at an already-released version.
+          is_tag = os.environ.get("GITHUB_REF", "").startswith("refs/tags/v")
+
+          if is_tag and server["version"] != package_version:
               problems.append(
                   f"server.json version {server['version']} != pyproject {package_version}"
               )
           for package in server["packages"]:
-              if package["version"] != package_version:
+              if is_tag and package["version"] != package_version:
                   problems.append(
                       f"server.json packages[].version {package['version']} "
                       f"!= pyproject {package_version}"
                   )
 
-          ref = os.environ.get("GITHUB_REF", "")
-          if ref.startswith("refs/tags/v"):
-              tag_version = ref[len("refs/tags/v"):]
+          if is_tag:
+              tag_version = os.environ["GITHUB_REF"][len("refs/tags/v"):]
               if tag_version != package_version:
                   problems.append(f"tag v{tag_version} != pyproject {package_version}")
 
@@ -74,7 +82,7 @@ jobs:
         # publish.yml runs on the same tag; the registry validates that the
         # declared package version exists, so do not race it.
         run: |
-          VERSION=$(python -c "import tomllib,pathlib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          VERSION=$(python -c "import json,pathlib;print(json.loads(pathlib.Path('server.json').read_text())['packages'][0]['version'])")
           for attempt in $(seq 1 30); do
             if curl -sf "https://pypi.org/pypi/actenon-kernel/${VERSION}/json" > /dev/null; then
               echo "actenon-kernel ${VERSION} is on PyPI"

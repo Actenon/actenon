@@ -98,6 +98,8 @@ jobs:
           python - <<'EOF'
           import json, os, pathlib, sys, tomllib
 
+          from packaging.version import Version
+
           server = json.loads(pathlib.Path("server.json").read_text())
           readme = pathlib.Path("README.md").read_text()
           package_version = tomllib.loads(
@@ -122,15 +124,29 @@ jobs:
                       f"{expected_prefix!r} (namespace is case-sensitive; the "
                       f"registry grants io.github.<Owner>/* verbatim)"
                   )
-          if server["version"] != package_version:
+          # Registry metadata is immutable per server version, so revising a
+          # description or title requires a NEW server version. That revision
+          # ships no new code, so server["version"] is allowed to run ahead of
+          # the package version — they are deliberately separate fields.
+          #
+          # What must never happen is the listing pointing at a package that
+          # does not exist. So: the declared package version may never be
+          # AHEAD of what this repo has released, and the server version may
+          # never be behind the package it ships.
+          server_v = Version(server["version"])
+          package_v = Version(package_version)
+          if server_v < package_v:
               problems.append(
-                  f"server.json version {server['version']} != pyproject {package_version}"
+                  f"server.json version {server['version']} is behind the package "
+                  f"version {package_version} — bump the server version forward"
               )
           for package in server["packages"]:
-              if package["version"] != package_version:
+              declared = Version(package["version"])
+              if declared > package_v:
                   problems.append(
-                      f"server.json packages[].version {package['version']} "
-                      f"!= pyproject {package_version}"
+                      f"server.json packages[].version {package['version']} is AHEAD "
+                      f"of pyproject {package_version}: the listing would point at a "
+                      f"package that has not been released"
                   )
               if package["identifier"] != "actenon-kernel":
                   problems.append(
@@ -140,7 +156,11 @@ jobs:
               for problem in problems:
                   print(f"FAIL: {problem}", file=sys.stderr)
               sys.exit(1)
-          print(f"OK: MCP Registry metadata matches the package ({package_version})")
+          print(
+              f"OK: MCP Registry metadata coherent "
+              f"(server {server['version']}, package {server['packages'][0]['version']}, "
+              f"pyproject {package_version})"
+          )
           EOF
 
       - name: Check generated Python badge
