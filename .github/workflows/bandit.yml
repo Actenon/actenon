@@ -1,0 +1,42 @@
+name: Bandit static analysis
+
+# Runs bandit on the cryptographic and replay-prevention surfaces.
+# Results are recorded in docs/CRYPTO_REVIEW.md. This workflow does NOT
+# gate CI — it records findings so they are visible. All current findings
+# are assessed as false positives (see CRYPTO_REVIEW.md).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'actenon/proof/**'
+      - 'actenon/replay/**'
+      - '.github/workflows/bandit.yml'
+  pull_request:
+    paths:
+      - 'actenon/proof/**'
+      - 'actenon/replay/**'
+      - '.github/workflows/bandit.yml'
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  bandit:
+    name: Bandit scan on crypto surface
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install bandit
+      - name: Run bandit
+        run: |
+          bandit -r actenon/proof/ actenon/replay/ -f json -o bandit-results.json || true
+          bandit -r actenon/proof/ actenon/replay/ -ll || true
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-results
+          path: bandit-results.json
+          retention-days: 30
