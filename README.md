@@ -83,6 +83,8 @@ The Kernel is the **trust anchor** of the Actenon ecosystem. It is:
 
 The Kernel does **one thing**: it verifies that a `PCCB` (Proof of Constrained Capability Bound) authorizes an exact `Action Intent` for this caller, this target, this audience, this scope, this time window, and this single execution attempt — and the `ProtectedExecutor` refuses the attempt (no side effect, structured Refusal emitted) if verification fails. The Kernel does **not** issue grants or make policy decisions — that's Permit's job.
 
+> **Guarantee precondition:** the edge guarantee holds when the protected edge is the only path to the resource, the backend accepts only brokered credentials issued after verification, and the agent has no standing credential or alternate route. If those conditions are not met, the Kernel still refuses invalid proofs — but it cannot prevent a caller that bypasses it from reaching the resource. Full scope in [`docs/SCOPE_AND_GUARANTEES.md`](docs/SCOPE_AND_GUARANTEES.md).
+
 ## Why it exists
 
 Modern agent stacks already answer the upstream question — *should this requester be allowed to do this kind of thing?* — with authentication, policy engines, approval workflows, and audit logs. They still leave open the question the execution edge needs to answer:
@@ -398,6 +400,13 @@ The repo ships an auditor-readable [`THREAT_MODEL.md`](docs/THREAT_MODEL.md) and
 - **Payload tampering** — strict RFC 8785 JCS canonicalisation; floats rejected; duplicate object keys rejected before canonicalisation.
 - **Clock drift** — configurable, validated `clock_skew_tolerance` on `not_before` and `expires_at`; **strict zero by default**.
 - **Concurrency replay (double-spend)** — atomic transactional claim against a unique `replay_key` in a durable store, plus mutation lock and monotonicity assertion. Verified under a 32-worker concurrency race: exactly one execution succeeds; the rest are refused with `REPLAY_DETECTED`.
+
+> **No external cryptographic review has been performed.** The
+> self-review above is good practice but is not a substitute for an
+> independent pair of eyes. See
+> [`docs/CRYPTO_REVIEW.md`](docs/CRYPTO_REVIEW.md) for the exact
+> surfaces that need external review, the file pointers for each, and
+> the specific questions a reviewer should answer.
 
 ## What the Kernel does NOT do
 
