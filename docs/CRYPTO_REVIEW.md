@@ -1,6 +1,7 @@
 # Cryptographic review status
 
 > **Status: no external cryptographic review has been performed.**
+> **Automated static analysis (bandit) has been run; results below.**
 
 This document records what needs external review, where the review
 entry points are, and what the current self-review covers. It exists
@@ -8,6 +9,38 @@ because an external evaluator correctly noted that
 [`AUDIT_RESPONSES.md`](AUDIT_RESPONSES.md) — which records our own
 answers to our own diligence questions — is good practice but is not
 a substitute for an independent pair of eyes on the crypto surface.
+
+## Automated static analysis
+
+**Tool:** [bandit](https://github.com/PyCQA/bandit) 1.9.4 (Python AST
+static analysis security tool).
+
+**Scope:** `actenon/proof/` and `actenon/replay/` — the cryptographic
+and replay-prevention surfaces.
+
+**Date:** 2026-07-25
+
+**Results:** 3 findings, all assessed as **false positives**:
+
+| # | Severity | Confidence | Test ID | File:Line | Finding | Assessment |
+|---|---|---|---|---|---|---|
+| 1 | LOW | MEDIUM | B105 | `actenon/proof/signers/local.py:17` | Possible hardcoded password: `ACTENON_LOCAL_HMAC_SECRET` | **False positive.** This is the *environment variable name* (`ACTENON_LOCAL_HMAC_SECRET`), not a password value. The actual secret at line 16 (`LOCAL_PROOF_SECRET = b"actenon-local-proof-secret-v1"`) is explicitly public and the code warns it is dev-only: "The default local proof secret is public; production must use asymmetric signers." |
+| 2 | MEDIUM | HIGH | B310 | `actenon/proof/signers/proof_seal.py:84` | Audit url open for permitted schemes | **False positive.** The `urlopen` call is to a configured proof-seal service URL (not user-controlled). The URL scheme is validated by the proof-seal client configuration. |
+| 3 | MEDIUM | LOW | B608 | `actenon/replay/dbapi.py:417` | Possible SQL injection via string-based query construction | **False positive.** The query uses a parameterized placeholder (`?`) for the user-controlled `replay_key` value. `SELECT_FIELDS` is a module-level constant, not user input. No injection vector. |
+
+**Command to reproduce:**
+```bash
+bandit -r actenon/proof/ actenon/replay/ -f json -o bandit-results.json
+```
+
+**Limitations of automated analysis:**
+- Bandit is an AST-based tool; it cannot verify cryptographic correctness
+  (e.g., whether canonicalisation is RFC 8785-conformant, whether
+  constant-time comparisons are actually constant-time, whether the
+  replay atomicity holds under concurrent access).
+- Bandit cannot detect logic errors in the key-lifecycle state machine.
+- Bandit cannot verify cross-language canonicalisation equivalence.
+- **Automated analysis is not a substitute for manual cryptographic review.**
 
 ## What has been self-reviewed
 
