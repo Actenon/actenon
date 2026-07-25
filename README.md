@@ -401,6 +401,13 @@ The repo ships an auditor-readable [`THREAT_MODEL.md`](docs/THREAT_MODEL.md) and
 - **Clock drift** — configurable, validated `clock_skew_tolerance` on `not_before` and `expires_at`; **strict zero by default**.
 - **Concurrency replay (double-spend)** — atomic transactional claim against a unique `replay_key` in a durable store, plus mutation lock and monotonicity assertion. Verified under a 32-worker concurrency race: exactly one execution succeeds; the rest are refused with `REPLAY_DETECTED`.
 
+> **No external cryptographic review has been performed.** The
+> self-review above is good practice but is not a substitute for an
+> independent pair of eyes. See
+> [`docs/CRYPTO_REVIEW.md`](docs/CRYPTO_REVIEW.md) for the exact
+> surfaces that need external review, the file pointers for each, and
+> the specific questions a reviewer should answer.
+
 ## What the Kernel does NOT do
 
 Actenon gates explicit execution-edge actions; it does not inspect or filter prompts, model output, or in-band response content. It can require proof for an explicit export or transmit action, but it does not stop data disclosed inside ordinary output unless that disclosure is itself modeled and routed as a protected action.
