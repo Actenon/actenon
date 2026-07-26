@@ -54,7 +54,7 @@ If a claim drifts, the badge goes red before a human notices.
 
 ## The Actenon ecosystem
 
-The Kernel is one of five independent repositories that together close the **execution gap** — the gap between *upstream authorization* and the *execution edge* that actually performs a consequential side effect.
+The Kernel is one of the independent repositories that together close the **execution gap** — the gap between *upstream authorization* and the *execution edge* that actually performs a consequential side effect.
 
 <!-- ECOSYSTEM-TABLE:START -->
 | Repository | Role | Depends on | Packages |
